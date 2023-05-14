@@ -2,6 +2,7 @@ var express = require("express");
 const Word = require("../model/words");
 var router = express.Router();
 const multer = require("multer");
+const auth = require("../middleware/auth");
 
 router.get("/", async function (req, res, next) {
   try {
@@ -20,6 +21,7 @@ router.get("/", async function (req, res, next) {
 
 router.get("/find", async function (req, res, next) {
   try {
+    console.log(req.userId);
     const search_query = req.query.search_query;
     let queriedWord = [];
     const exactWord = await Word.aggregate([
@@ -39,8 +41,8 @@ router.get("/find", async function (req, res, next) {
         },
       },
     ]);
-    if (exactWord.length>0) {
-      queriedWord = queriedWord.concat(exactWord)
+    if (exactWord.length > 0) {
+      queriedWord = queriedWord.concat(exactWord);
     }
     const queriedWord2 = await Word.aggregate([
       {
@@ -68,8 +70,8 @@ router.get("/find", async function (req, res, next) {
         },
       },
     ]);
-    if (queriedWord2.length>0) {
-      queriedWord = queriedWord.concat(queriedWord2)
+    if (queriedWord2.length > 0) {
+      queriedWord = queriedWord.concat(queriedWord2);
     }
     return res.status(200).json({
       numberOfResults: queriedWord.length,

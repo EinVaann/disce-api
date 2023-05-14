@@ -5,7 +5,8 @@ var cookieParser = require("cookie-parser");
 var bodyParser = require("body-parser");
 const mongoose = require("mongoose");
 var users = require("./routes/users");
-var words = require("./routes/words")
+var words = require("./routes/words");
+var flashCard = require("./routes/flashCard")
 
 var app = express();
 // app.use(express.json());
@@ -25,7 +26,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 
-app.use("/api/v1/users", users);
+app.use("/api/v1/users/", users);
 app.use("/api/v1/words/", words);
-
+app.use("/api/v1/flashCard/", flashCard);
 module.exports = app;
