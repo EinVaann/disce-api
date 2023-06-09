@@ -2,7 +2,6 @@ var express = require("express");
 var router = express.Router();
 var auth = require("../middleware/auth");
 var FlashCard = require("../model/flashCard");
-var Users = require("../model/users");
 
 router.get("/", auth, async function (req, res, next) {
   try {
@@ -119,7 +118,6 @@ router.put("/removeWord", auth, async function (req, res, next) {
       });
     } else {
       var wordList = checkFlashCard.wordList;
-      console.log(wordList.indexOf(wordId));
       if (wordList.indexOf(wordId) == -1) {
         return res.status(400).json({
           message: "Word isn't in this card.",

@@ -77,7 +77,8 @@ router.post("/register", async function (req, res, next) {
     await newUsers.save();
     const accessToken = jwt.sign(
       { userId: newUsers._id },
-      process.env.ACCESS_TOKEN_SECRET
+      process.env.ACCESS_TOKEN_SECRET,
+      { expiresIn: '3h' }
     );
     return res.status(200).json({
       message: "Register successfully",
