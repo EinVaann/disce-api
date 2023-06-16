@@ -4,7 +4,7 @@ const argon2 = require("argon2");
 const jwt = require("jsonwebtoken");
 const Users = require("../model/users");
 
-router.get("/login", async function (req, res, next) {
+router.post("/login", async function (req, res, next) {
   const { username, password } = req.body;
   if (!username || !password)
     return res.status(400).json({
