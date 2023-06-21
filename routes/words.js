@@ -3,6 +3,7 @@ const Word = require("../model/words");
 var router = express.Router();
 const multer = require("multer");
 const auth = require("../middleware/auth");
+const Gtts = require('gtts');
 
 router.get("/", async function (req, res, next) {
   try {
@@ -83,6 +84,11 @@ router.get("/find", async function (req, res, next) {
     });
   }
 });
+
+router.get("/hear", function(req,res){
+  const gtts = new Gtts(req.query.text, 'en');
+  gtts.stream().pipe(res);
+})
 
 // router.post("/create", async function (req, res, next) {
 //   try {

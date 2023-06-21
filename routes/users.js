@@ -19,7 +19,7 @@ router.post("/login", async function (req, res, next) {
       accessToken = jwt.sign(
         { userId: checkedUser._id },
         process.env.ACCESS_TOKEN_SECRET,
-        { expiresIn: '3h' }
+        // { expiresIn: '3h' }
       );
       var validatePassword = await argon2.verify(
         checkedUser.password,
@@ -78,7 +78,7 @@ router.post("/register", async function (req, res, next) {
     const accessToken = jwt.sign(
       { userId: newUsers._id },
       process.env.ACCESS_TOKEN_SECRET,
-      { expiresIn: '3h' }
+      // { expiresIn: '3h' }
     );
     return res.status(200).json({
       message: "Register successfully",
