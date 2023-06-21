@@ -87,6 +87,7 @@ router.get("/find", async function (req, res, next) {
 
 router.get("/hear", function(req,res){
   const gtts = new Gtts(req.query.text, 'en');
+  res.set({'Content-Type': 'audio/mpeg'});
   gtts.stream().pipe(res);
 })
 
