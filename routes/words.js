@@ -1,9 +1,26 @@
 var express = require("express");
+require("dotenv").config();
 const Word = require("../model/words");
 var router = express.Router();
-const multer = require("multer");
-const auth = require("../middleware/auth");
-const Gtts = require('gtts');
+const Multer = require("multer");
+const Gtts = require("gtts");
+const { translate } = require("bing-translate-api");
+const thesaurus = require("word-thesaurus");
+const tesseract = require("node-tesseract-ocr");
+const admin = require("firebase-admin");
+const FirebaseStorage = require("multer-firebase-storage");
+const access = require('../access.json')
+var ocr = require('ocr-by-image-url');
+
+const fbInstance = admin.initializeApp(
+  {
+    credential: admin.credential.cert(access),
+    storageBucket: "disce-5def1.appspot.com"
+  })
+
+// const multer = Multer({
+//   storage: FirebaseStorage({}, fbInstance)
+// })
 
 router.get("/", async function (req, res, next) {
   try {
@@ -85,11 +102,44 @@ router.get("/find", async function (req, res, next) {
   }
 });
 
-router.get("/hear", function(req,res){
-  const gtts = new Gtts(req.query.text, 'en');
-  res.set({'Content-Type': 'audio/mpeg'});
+router.get("/hear", function (req, res) {
+  const gtts = new Gtts(req.query.text, "en");
+  res.set({ "Content-Type": "audio/mpeg" });
   gtts.stream().pipe(res);
-})
+});
+
+router.get("/trans", function (req, res) {
+  translate(req.query.text, "vi", "en", true)
+    .then((ress) => {
+      console.log(ress);
+      res.redirect("/api/v1/words/find?search_query=" + ress.translation);
+    })
+    .catch((err) => {
+      console.error(err);
+      return res.status(500).json({ err });
+    });
+});
+
+router.get("/thesaurus", function (req, res) {
+  var text = thesaurus.find(req.query.text);
+  return res.status(200).json(text);
+});
+
+router.post("/text-from-img", function (req, res) {
+  const config = {
+    lang: "eng",
+    oem: 1,
+    psm: 3,
+  }
+  tesseract
+    .recognize("https://tesseract.projectnaptha.com/img/eng_bw.png", config)
+    .then((text) => {
+      console.log("Result:", text)
+    })
+    .catch((error) => {
+      console.log(error.message)
+    })
+});
 
 // router.post("/create", async function (req, res, next) {
 //   try {

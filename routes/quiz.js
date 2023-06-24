@@ -22,6 +22,10 @@ router.get("/generate", auth, async function (req, res, next) {
         message: "Can't find flash card.",
       });
     }
+    
+    for(let i in flashCard.wordList){
+
+    }
     if (flashCard.wordList.length < 10) {
       return res.status(400).json({
         message: "Flash card need more word to create a quiz.",
