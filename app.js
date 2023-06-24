@@ -16,10 +16,10 @@ var app = express();
 app.use(cors());
 
 const server = http.createServer(app)
-const io = new Server(server, {})
+const io = new Server(server, {path: '/socket.io'})
 
 io.on("connection", (socket)=>{
-  console.log(socket.id);
+  console.log('socket',socket.id);
   socket.on('disconnect', ()=>{
     console.log("dis", socket.id);
   })
