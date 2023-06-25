@@ -9,21 +9,11 @@ var users = require("./routes/users");
 var words = require("./routes/words");
 var flashCard = require("./routes/flashCard")
 var quiz = require("./routes/quiz")
-const {Server} = require("socket.io");
 const http = require('http');
 
 var app = express();
-app.use(cors());
 
-const server = http.createServer(app)
-const io = new Server(server, {path: '/socket.io'})
 
-io.on("connection", (socket)=>{
-  console.log('socket',socket.id);
-  socket.on('disconnect', ()=>{
-    console.log("dis", socket.id);
-  })
-})
 // app.use(express.json());
 
 const connectDB = async () => {
@@ -45,4 +35,7 @@ app.use("/api/v1/users/", users);
 app.use("/api/v1/words/", words);
 app.use("/api/v1/flashCard/", flashCard);
 app.use("/api/v1/quiz/", quiz);
+
+
+
 module.exports = app;
