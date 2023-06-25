@@ -8,14 +8,14 @@ var app = require('../app');
 var debug = require('debug')('disce-api:server');
 var http = require('http');
 const {Server} = require("socket.io");
-
+const cors = require("cors");
 /**
  * Get port from environment and store in Express.
  */
 
-var port = normalizePort(process.env.PORT || '3000');
+var port = normalizePort(process.env.PORT || '3001');
 app.set('port', port);
-
+app.use(cors());
 /**
  * Create HTTP server.
  */
@@ -25,9 +25,23 @@ var server = http.createServer(app);
 /**
  * Listen on provided port, on all network interfaces.
  */
-const io = new Server(server, {path: '/socket.io'})
+const io = new Server(server,{
+  cors: {
+    origin: "*",
+    methods: ["GET", "POST","PUT","DELETE","HEAD","PATCH"],
+  },
+})
 io.on("connection", (socket)=>{
   console.log('socket',socket.id);
+  socket.on("join_room", (data) => {
+    socket.join(data);
+    console.log(`User with ID: ${socket.id} joined room: ${data}`);
+  });
+
+  socket.on("send_message", (data) => {
+    socket.to(data.room).emit("receive_message", data);
+  });
+  
   socket.on('disconnect', ()=>{
     console.log("dis", socket.id);
   })
