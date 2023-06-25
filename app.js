@@ -1,7 +1,6 @@
 require("dotenv").config();
 var express = require("express");
 var path = require("path");
-const cors = require('cors');
 var cookieParser = require("cookie-parser");
 var bodyParser = require("body-parser");
 const mongoose = require("mongoose");
@@ -12,9 +11,6 @@ var quiz = require("./routes/quiz")
 const http = require('http');
 
 var app = express();
-
-
-// app.use(express.json());
 
 const connectDB = async () => {
   try {
