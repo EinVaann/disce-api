@@ -88,10 +88,9 @@ io.on("connection", (socket) => {
       time: Date.now(),
     });
     await newMsg.save();
-
     var room_name = [userId, otherUserId].sort().join();
     console.log(data.content);
-    socket.to(room_name).emit("rei_msg", data.content);
+    socket.to(room_name).emit("rei_msg", JSON.stringify(newMsg));
   });
 
   socket.on("disconnect", () => {
