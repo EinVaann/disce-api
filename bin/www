@@ -85,7 +85,7 @@ io.on("connection", (socket) => {
       participant: [userId, otherUserId],
       sender: userId,
       content: data.content,
-      time: Date.now(),
+      time:new Date(Date.now()+7*60*60000),
     });
     await newMsg.save();
     var room_name = [userId, otherUserId].sort().join();
