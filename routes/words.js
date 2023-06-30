@@ -2,25 +2,10 @@ var express = require("express");
 require("dotenv").config();
 const Word = require("../model/words");
 var router = express.Router();
-const Multer = require("multer");
 const Gtts = require("gtts");
 const { translate } = require("bing-translate-api");
 const thesaurus = require("word-thesaurus");
-const tesseract = require("node-tesseract-ocr");
-const admin = require("firebase-admin");
-const FirebaseStorage = require("multer-firebase-storage");
-const access = require('../access.json')
-var ocr = require('ocr-by-image-url');
 
-const fbInstance = admin.initializeApp(
-  {
-    credential: admin.credential.cert(access),
-    storageBucket: "disce-5def1.appspot.com"
-  })
-
-// const multer = Multer({
-//   storage: FirebaseStorage({}, fbInstance)
-// })
 
 router.get("/", async function (req, res, next) {
   try {

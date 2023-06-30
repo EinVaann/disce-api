@@ -4,17 +4,20 @@
  * Module dependencies.
  */
 
-var app = require('../app');
-var debug = require('debug')('disce-api:server');
-var http = require('http');
-const {Server} = require("socket.io");
+var app = require("../app");
+var debug = require("debug")("disce-api:server");
+var http = require("http");
+const { Server } = require("socket.io");
 const cors = require("cors");
+const users = require("../model/users");
+const chatLine = require("../model/chatLine");
+const { default: mongoose } = require("mongoose");
 /**
  * Get port from environment and store in Express.
  */
 
-var port = normalizePort(process.env.PORT || '3001');
-app.set('port', port);
+var port = normalizePort(process.env.PORT || "3000");
+app.set("port", port);
 app.use(cors());
 /**
  * Create HTTP server.
@@ -25,31 +28,79 @@ var server = http.createServer(app);
 /**
  * Listen on provided port, on all network interfaces.
  */
-const io = new Server(server,{
+const io = new Server(server, {
   cors: {
     origin: "*",
-    methods: ["GET", "POST","PUT","DELETE","HEAD","PATCH"],
+    methods: ["GET", "POST", "PUT", "DELETE", "HEAD", "PATCH"],
   },
-})
-io.on("connection", (socket)=>{
-  console.log('socket',socket.id);
-  socket.on("join_room", (data) => {
-    socket.join(data);
-    console.log(`User with ID: ${socket.id} joined room: ${data}`);
+});
+io.on("connection", (socket) => {
+  console.log("socket", socket.id);
+  socket.on("join_room", async (data) => {
+    const userId = data.userId;
+    const otherUserId = data.otherUserId;
+    const chats = await chatLine.aggregate([
+      {
+        $project: {
+          participant: 1,
+          sender: 1,
+          content: 1,
+          time: 1,
+        },
+      },
+      {
+        $match: {
+          participant: {
+            $all: [
+              new mongoose.Types.ObjectId(userId),
+              new mongoose.Types.ObjectId(otherUserId),
+            ],
+          },
+        },
+      },
+      { $limit: 50 },
+    ]);
+    // var list = []
+    // for(var i in chats){
+    //   list.push({'content':i.content,'time':i.time,'sender':i.sender})
+    // }
+    console.log(JSON.stringify(chats))
+    var room_name = [userId, otherUserId].sort().join();
+    socket.join(room_name);
+    io.to(room_name).emit("pre_msg", JSON.stringify(chats));
+    console.log(`User with ID: ${socket.id} joined room: ${room_name}`);
+  });
+  socket.on('leave_room',(data)=>{
+    const userId = data.userId;
+    const otherUserId = data.otherUserId;
+    var room_name = [userId, otherUserId].sort().join();
+    socket.leave(room_name);
+    console.log(`User with ID: ${socket.id} leave room: ${room_name}`);
+  })
+  socket.on("send_msg", async (data) => {
+    const userId = data.userId;
+    const otherUserId = data.otherUserId;
+    var newMsg = new chatLine({
+      participant: [userId, otherUserId],
+      sender: userId,
+      content: data.content,
+      time: Date.now(),
+    });
+    await newMsg.save();
+
+    var room_name = [userId, otherUserId].sort().join();
+    console.log(data.content);
+    socket.to(room_name).emit("rei_msg", data.content);
   });
 
-  socket.on("send_message", (data) => {
-    socket.to(data.room).emit("receive_message", data);
-  });
-  
-  socket.on('disconnect', ()=>{
+  socket.on("disconnect", () => {
     console.log("dis", socket.id);
-  })
-})
+  });
+});
 
 server.listen(port);
-server.on('error', onError);
-server.on('listening', onListening);
+server.on("error", onError);
+server.on("listening", onListening);
 
 /**
  * Normalize a port into a number, string, or false.
@@ -76,22 +127,20 @@ function normalizePort(val) {
  */
 
 function onError(error) {
-  if (error.syscall !== 'listen') {
+  if (error.syscall !== "listen") {
     throw error;
   }
 
-  var bind = typeof port === 'string'
-    ? 'Pipe ' + port
-    : 'Port ' + port;
+  var bind = typeof port === "string" ? "Pipe " + port : "Port " + port;
 
   // handle specific listen errors with friendly messages
   switch (error.code) {
-    case 'EACCES':
-      console.error(bind + ' requires elevated privileges');
+    case "EACCES":
+      console.error(bind + " requires elevated privileges");
       process.exit(1);
       break;
-    case 'EADDRINUSE':
-      console.error(bind + ' is already in use');
+    case "EADDRINUSE":
+      console.error(bind + " is already in use");
       process.exit(1);
       break;
     default:
@@ -105,8 +154,6 @@ function onError(error) {
 
 function onListening() {
   var addr = server.address();
-  var bind = typeof addr === 'string'
-    ? 'pipe ' + addr
-    : 'port ' + addr.port;
-  debug('Listening on ' + bind);
+  var bind = typeof addr === "string" ? "pipe " + addr : "port " + addr.port;
+  debug("Listening on " + bind);
 }
