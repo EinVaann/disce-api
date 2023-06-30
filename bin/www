@@ -59,24 +59,25 @@ io.on("connection", (socket) => {
         },
       },
       { $limit: 50 },
+      { $sort: { time: 1 } },
     ]);
     // var list = []
     // for(var i in chats){
     //   list.push({'content':i.content,'time':i.time,'sender':i.sender})
     // }
-    console.log(JSON.stringify(chats))
+    console.log(JSON.stringify(chats));
     var room_name = [userId, otherUserId].sort().join();
     socket.join(room_name);
     io.to(room_name).emit("pre_msg", JSON.stringify(chats));
     console.log(`User with ID: ${socket.id} joined room: ${room_name}`);
   });
-  socket.on('leave_room',(data)=>{
+  socket.on("leave_room", (data) => {
     const userId = data.userId;
     const otherUserId = data.otherUserId;
     var room_name = [userId, otherUserId].sort().join();
     socket.leave(room_name);
     console.log(`User with ID: ${socket.id} leave room: ${room_name}`);
-  })
+  });
   socket.on("send_msg", async (data) => {
     const userId = data.userId;
     const otherUserId = data.otherUserId;
