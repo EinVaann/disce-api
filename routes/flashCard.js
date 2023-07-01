@@ -2,7 +2,7 @@ var express = require("express");
 var router = express.Router();
 var auth = require("../middleware/auth");
 var FlashCard = require("../model/flashCard");
-
+const Words = require("../model/words");
 router.get("/", auth, async function (req, res, next) {
   try {
     const userId = req.userId;
@@ -104,6 +104,103 @@ router.put("/addWord", auth, async function (req, res, next) {
   }
 });
 
+router.put("/remove-multiple-word", auth, async function (req, res, next) {
+  try {
+    const userId = req.userId;
+    const { wordIds, flashCardId } = req.body;
+    console.log(wordIds);
+    const checkFlashCard = await FlashCard.findOne({
+      _id: flashCardId,
+      userId: userId,
+    });
+    if (!checkFlashCard) {
+      return res.status(400).json({
+        message: "FlashCard is not existed!",
+      });
+    } else {
+      var wordList = checkFlashCard.wordList;
+      for (var i = 0; i < wordIds.length; i++) {
+        console.log(wordIds[i]);
+        if (wordList.indexOf(wordIds[i]) == -1) {
+          console.log("conti");
+          continue;
+        }
+        wordList.splice(wordList.indexOf(wordIds[i], 1));
+      }
+      var editedFlashCard = {
+        name: checkFlashCard.name,
+        wordList,
+        userId: checkFlashCard.userId,
+      };
+      const afterEdit = await FlashCard.findByIdAndUpdate(
+        flashCardId,
+        editedFlashCard,
+        { new: true }
+      );
+      return res.status(200).json({ flashCard: afterEdit });
+    }
+  } catch (error) {
+    const err = new Error("Internal Server Error");
+    err.status = 500;
+    next(err);
+    return res.status(500).json({ success: false, message: "" + error });
+  }
+});
+
+router.put("/add-multiple-word", auth, async function (req, res, next) {
+  try {
+    const userId = req.userId;
+    const { words, flashCardId } = req.body;
+    console.log(words);
+    const checkFlashCard = await FlashCard.findOne({
+      _id: flashCardId,
+      userId: userId,
+    });
+    if (!checkFlashCard) {
+      return res.status(400).json({
+        message: "FlashCard is not existed!",
+      });
+    } else {
+      var wordList = await Words.aggregate([
+        {
+          $project: {
+            word: 1,
+            pronunciation: 1,
+            meaning: 1,
+          },
+        },
+        {
+          $match: {
+            word: { $in: words },
+          },
+        },
+      ]);
+      var existedWordList = checkFlashCard.wordList;
+      for (var i = 0; i < wordList.length; i++) {
+        if(!(wordList[i]._id in existedWordList)){
+          existedWordList.push(wordList[i])
+        }
+      }
+      var editedFlashCard = {
+        name: checkFlashCard.name,
+        wordList: existedWordList,
+        userId: checkFlashCard.userId,
+      };
+      const afterEdit = await FlashCard.findByIdAndUpdate(
+        flashCardId,
+        editedFlashCard,
+        { new: true }
+      );
+      return res.status(200).json({ flashCard: afterEdit });
+    }
+  } catch (error) {
+    const err = new Error("Internal Server Error");
+    err.status = 500;
+    next(err);
+    return res.status(500).json({ success: false, message: "" + error });
+  }
+});
+
 router.put("/removeWord", auth, async function (req, res, next) {
   try {
     const userId = req.userId;
@@ -157,19 +254,19 @@ router.put("/rename", auth, async function (req, res, next) {
         message: "FlashCard is not existed!",
       });
     } else {
-        var editedCard = {
-            name: newName,
-            wordList: checkFlashCard.wordList,
-            userId: userId
-        }
-        const afterEdit = await FlashCard.findByIdAndUpdate(
-            flashCardId,
-            editedCard,
-            { new: true }
-          );
-        return res.status(200).json({
-            editedCard: afterEdit
-        })
+      var editedCard = {
+        name: newName,
+        wordList: checkFlashCard.wordList,
+        userId: userId,
+      };
+      const afterEdit = await FlashCard.findByIdAndUpdate(
+        flashCardId,
+        editedCard,
+        { new: true }
+      );
+      return res.status(200).json({
+        editedCard: afterEdit,
+      });
     }
   } catch (error) {
     const err = new Error("Internal Server Error");

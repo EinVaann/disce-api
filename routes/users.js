@@ -128,6 +128,53 @@ router.get("/get-users", auth, async function (req, res, next) {
   }
 });
 
+router.put("/change-password", auth, async function (req, res, next) {
+  try {
+    const userId = req.userId;
+    const { oldPass, newPass } = req.body;
+    if (oldPass != newPass) {
+      const checkedUser = await Users.findOne({
+        _id: userId,
+      });
+      if (checkedUser) {
+        var validatePassword = await argon2.verify(
+          checkedUser.password,
+          oldPass
+        );
+        if (validatePassword) {
+          const newHashPass = await argon2.hash(newPass); //hash password
+          const newUsers = {
+            username: checkedUser.username,
+            password: newHashPass,
+            email: checkedUser.email,
+          };
+          const changedUser = await Users.findByIdAndUpdate(userId, newUsers, {
+            new: true,
+          });
+          return res.status(200).json({ changedUser });
+        } else {
+          return res.status(400).json({
+            message:
+              "Old password is incorrect. Can't change into new password",
+          });
+        }
+      } else
+        return res.status(400).json({
+          message: "Something is wrong. Please try again later.",
+        });
+    } else {
+      return res
+        .status(400)
+        .json({ message: "New password can't be the same as old password" });
+    }
+  } catch (error) {
+    const err = new Error("Internal Server Error");
+    err.status = 500;
+    next(err);
+    return res.status(500).json({ success: false, message: "" + error });
+  }
+});
+
 router.get("/friends", auth, async function (req, res, next) {
   try {
     const userId = req.userId;
