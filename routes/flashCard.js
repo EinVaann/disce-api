@@ -120,12 +120,10 @@ router.put("/remove-multiple-word", auth, async function (req, res, next) {
     } else {
       var wordList = checkFlashCard.wordList;
       for (var i = 0; i < wordIds.length; i++) {
-        console.log(wordIds[i]);
         if (wordList.indexOf(wordIds[i]) == -1) {
-          console.log("conti");
           continue;
         }
-        wordList.splice(wordList.indexOf(wordIds[i], 1));
+        wordList.splice(wordList.indexOf(wordIds[i]),1);
       }
       var editedFlashCard = {
         name: checkFlashCard.name,
