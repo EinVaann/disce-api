@@ -39,7 +39,6 @@ router.get("/generate", auth, async function (req, res, next) {
       var wordMeanings = [];
       //get meaning of the 10 selected words
       for (let i = 0; i < 10; i++) {
-        // console.log(quizWords[i].meaning[0].meaning)
         wordMeanings.push(
           quizWords[i].meaning[0].meaning.replace(/ *\([^)]*\) */g, "")
         );

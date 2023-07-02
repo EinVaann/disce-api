@@ -133,7 +133,6 @@ router.put("/remove-multiple-word", auth, async function (req, res, next) {
   try {
     const userId = req.userId;
     const { wordIds, flashCardId } = req.body;
-    console.log(wordIds);
     const checkFlashCard = await FlashCard.findOne({
       _id: flashCardId,
       userId: userId,
@@ -174,7 +173,6 @@ router.put("/add-multiple-word", auth, async function (req, res, next) {
   try {
     const userId = req.userId;
     const { words, flashCardId } = req.body;
-    console.log(words);
     const checkFlashCard = await FlashCard.findOne({
       _id: flashCardId,
       userId: userId,

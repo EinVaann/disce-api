@@ -110,7 +110,6 @@ router.get("/get-users", auth, async function (req, res, next) {
     var userInfos = await UserInfos.findOne({ userId: userId });
     var friendList = userInfos.friendList;
     friendList.push(userId);
-    // console.log(friendList);
     var foundUser = await Users.aggregate([
       {
         $project: {

@@ -36,7 +36,6 @@ const io = new Server(server, {
   },
 });
 io.on("connection", (socket) => {
-  console.log("socket", socket.id);
   socket.on("join_room", async (data) => {
     const userId = data.userId;
     const otherUserId = data.otherUserId;
@@ -66,21 +65,17 @@ io.on("connection", (socket) => {
     // for(var i in chats){
     //   list.push({'content':i.content,'time':i.time,'sender':i.sender})
     // }
-    console.log(JSON.stringify(chats));
     var room_name = [userId, otherUserId].sort().join();
     socket.join(room_name);
     io.to(room_name).emit("pre_msg", JSON.stringify(chats));
-    console.log(`User with ID: ${socket.id} joined room: ${room_name}`);
   });
   socket.on("leave_room", (data) => {
     const userId = data.userId;
     const otherUserId = data.otherUserId;
     var room_name = [userId, otherUserId].sort().join();
     socket.leave(room_name);
-    console.log(`User with ID: ${socket.id} leave room: ${room_name}`);
   });
   socket.on("make_friend", async (data)=>{
-    console.log("make_friend")
     const userId = data.userId;
     const otherUserId = data.otherUserId;
     var currtUser = await userInfo.findOne({userId: userId});
@@ -113,7 +108,6 @@ io.on("connection", (socket) => {
     });
     await newMsg.save();
     var room_name = [userId, otherUserId].sort().join();
-    console.log(data.content);
     io.to(room_name).emit("rei_msg", JSON.stringify(newMsg));
   });
 

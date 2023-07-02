@@ -2,7 +2,6 @@ var express = require("express");
 require("dotenv").config();
 const Word = require("../model/words");
 var router = express.Router();
-const Gtts = require("gtts");
 const { translate } = require("bing-translate-api");
 const thesaurus = require("word-thesaurus");
 
@@ -24,7 +23,6 @@ router.get("/", async function (req, res, next) {
 
 router.get("/find", async function (req, res, next) {
   try {
-    console.log(req.userId);
     const search_query = req.query.search_query;
     let queriedWord = [];
     const exactWord = await Word.aggregate([
@@ -96,11 +94,9 @@ router.get("/hear", function (req, res) {
 router.get("/trans", function (req, res) {
   translate(req.query.text, "vi", "en", true)
     .then((ress) => {
-      console.log(ress);
       res.redirect("/api/v1/words/find?search_query=" + ress.translation);
     })
     .catch((err) => {
-      console.error(err);
       return res.status(500).json({ err });
     });
 });
@@ -109,63 +105,6 @@ router.get("/thesaurus", function (req, res) {
   var text = thesaurus.find(req.query.text);
   return res.status(200).json(text);
 });
-
-router.post("/text-from-img", function (req, res) {
-  const config = {
-    lang: "eng",
-    oem: 1,
-    psm: 3,
-  }
-  tesseract
-    .recognize("https://tesseract.projectnaptha.com/img/eng_bw.png", config)
-    .then((text) => {
-      console.log("Result:", text)
-    })
-    .catch((error) => {
-      console.log(error.message)
-    })
-});
-
-// router.post("/create", async function (req, res, next) {
-//   try {
-//     const { word, pronunciation, meaning } = req.body;
-
-//     //validate
-//     if (!word || !pronunciation || !meaning) {
-//       return res.status(400).json({
-//         message: "Missing information.",
-//       });
-//     }
-//     // create object and save
-//     var newWord = new Word({
-//       word,
-//       pronunciation,
-//       meaning,
-//     });
-//     await newWord.save();
-//     return res.status(200).json({
-//       newWord,
-//     });
-//   } catch (err) {
-//     return res.status(400).json({
-//       messsage: "Err0r: " + err,
-//     });
-//   }
-// });
-
-// router.delete("/delete", async function (req, res, next) {
-//   try {
-//     const word_id = req.query.word_id;
-//     const deletedWord = await Word.findByIdAndDelete(word_id);
-//     return res.status(200).json({
-//       deletedWord,
-//     });
-//   } catch (err) {
-//     return res.status(400).json({
-//       messsage: "Err0r: " + err,
-//     });
-//   }
-// });
 
 router.get("/mean", async function (req, res, next) {
   try {
@@ -184,28 +123,4 @@ router.get("/mean", async function (req, res, next) {
     });
   }
 });
-
-// router.post("/file", multer().single("file"), async function (req, res, next) {
-//   try {
-//     if (req.file != null) {
-//       const dicString = String(req.file.buffer);
-//       const dic = JSON.parse(dicString);
-//       var count = 0;
-//       // console.log(dic.length)
-//       for (let i = 0; i < dic.length; i++) {
-//         const newWord = new Word(dic[i]);
-//         await newWord.save();
-//         // console.log(count)
-//         count++;
-//       }
-//       return res.status(200).json({
-//         message: "received file add " + count + " file",
-//       });
-//     }
-//   } catch (err) {
-//     return res.status(400).json({
-//       messsage: "Err0r: " + err,
-//     });
-//   }
-// });
 module.exports = router;
