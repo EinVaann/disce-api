@@ -46,6 +46,31 @@ router.get("/get", auth, async function (req, res, next) {
   }
 });
 
+router.get("/get-preview", async function(req,res,next){
+  try{
+    const cardId = req.query.cardId;
+    // get and check
+    const flashCard = await FlashCard.findOne({
+      _id: cardId,
+    }).populate("wordList");
+    if (!flashCard) {
+      return res.status(400).json({
+        message: "Can't find designated flash card",
+      });
+    } else {
+      return res.status(200).json({
+        WordsIdCard: flashCard.wordList.length,
+        flashCard,
+      });
+    }
+  }catch (error) {
+    const err = new Error("Internal Server Error");
+    err.status = 500;
+    next(err);
+    return res.status(500).json({ success: false, message: "" + error });
+  }
+})
+
 router.post("/create", auth, async function (req, res, next) {
   try {
     const userId = req.userId;
