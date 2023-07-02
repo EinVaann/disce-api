@@ -80,22 +80,27 @@ io.on("connection", (socket) => {
     console.log(`User with ID: ${socket.id} leave room: ${room_name}`);
   });
   socket.on("make_friend", async (data)=>{
+    console.log("make_friend")
     const userId = data.userId;
     const otherUserId = data.otherUserId;
     var currtUser = await userInfo.findOne({userId: userId});
+    var newFL = currtUser.friendList
+    newFL.push(otherUserId)
     var editCurent = {
-      userId: currtUser.userId,
+      userId: userId,
       nickname: currtUser.nickName,
-      friendList: currtUser.friendList.push(otherUserId)
+      friendList: newFL
     }
-    await userInfo.findByIdAndUpdate(currtUser._id,editCurent,{new:1})
+    await userInfo.findByIdAndUpdate(currtUser._id,editCurent)
     var otherUser = await userInfo.findOne({userId: otherUserId});
+    var newFL2 = otherUser.friendList
+    newFL2.push(userId)
     var editOther = {
       userId: otherUser.userId,
       nickname: otherUser.nickName,
-      friendList: otherUser.friendList.push(userId)
+      friendList: newFL2
     }
-    await userInfo.findByIdAndUpdate(otherUser._id,editOther,{new:1})
+    await userInfo.findByIdAndUpdate(otherUser._id,editOther)
   })
   socket.on("send_msg", async (data) => {
     const userId = data.userId;

@@ -7,6 +7,7 @@ const Users = require("../model/users");
 const UserInfos = require("../model/userInfo");
 const chatLine = require("../model/chatLine");
 const { default: mongoose } = require("mongoose");
+const userInfo = require("../model/userInfo");
 
 router.post("/login", async function (req, res, next) {
   const { username, password } = req.body;
@@ -84,6 +85,12 @@ router.post("/register", async function (req, res, next) {
       process.env.ACCESS_TOKEN_SECRET
       // { expiresIn: '3h' }
     );
+    const newUsersInfo = new userInfo({
+      userId: newUsers._id,
+      friendList: [],
+      nickName: newUsers.username
+    })
+    await newUsersInfo.save();
     return res.status(200).json({
       message: "Register successfully",
       accessToken,
