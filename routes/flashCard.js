@@ -228,9 +228,9 @@ router.post("/make-a-copy",auth,async function(req,res,next){
   try{
     const userId = req.userId;
     const { flashCardId } = req.body;
-    const flashCard = await FlashCard.findOneById(flashCardId);
+    const flashCard = await FlashCard.findOne({_id:flashCardId});
     if(!flashCard){
-      return res.status(200).json({message: "FlashCard doesn't exist"})
+      return res.status(400).json({message: "FlashCard doesn't exist"})
     }
     else{
       const copyOfFlashCard = new FlashCard({
