@@ -12,6 +12,7 @@ const cors = require("cors");
 const users = require("../model/users");
 const chatLine = require("../model/chatLine");
 const { default: mongoose } = require("mongoose");
+const userInfo = require("../model/userInfo");
 /**
  * Get port from environment and store in Express.
  */
@@ -78,6 +79,24 @@ io.on("connection", (socket) => {
     socket.leave(room_name);
     console.log(`User with ID: ${socket.id} leave room: ${room_name}`);
   });
+  socket.on("make_friend", async (data)=>{
+    const userId = data.userId;
+    const otherUserId = data.otherUserId;
+    var currtUser = await userInfo.findOne({userId: userId});
+    var editCurent = {
+      userId: currtUser.userId,
+      nickname: currtUser.nickName,
+      friendList: currtUser.friendList.push(otherUserId)
+    }
+    await userInfo.findByIdAndUpdate(currtUser._id,editCurent,{new:1})
+    var otherUser = await userInfo.findOne({userId: otherUserId});
+    var editOther = {
+      userId: otherUser.userId,
+      nickname: otherUser.nickName,
+      friendList: otherUser.friendList.push(userId)
+    }
+    await userInfo.findByIdAndUpdate(otherUser._id,editOther,{new:1})
+  })
   socket.on("send_msg", async (data) => {
     const userId = data.userId;
     const otherUserId = data.otherUserId;
