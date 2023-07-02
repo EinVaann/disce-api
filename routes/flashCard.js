@@ -199,6 +199,31 @@ router.put("/add-multiple-word", auth, async function (req, res, next) {
   }
 });
 
+router.post("/make-a-copy",auth,async function(req,res,next){
+  try{
+    const userId = req.userId;
+    const { flashCardId } = req.body;
+    const flashCard = await FlashCard.findOneById(flashCardId);
+    if(!flashCard){
+      return res.status(200).json({message: "FlashCard doesn't exist"})
+    }
+    else{
+      const copyOfFlashCard = new FlashCard({
+        userId: userId,
+        wordList: flashCard.wordList,
+        name: 'copy of '+flashCard.name
+      })
+      await copyOfFlashCard.save();
+      return res.status(200).json({message: "Copied Flash Card",copyOfFlashCard})
+    }
+  }catch (error) {
+    const err = new Error("Internal Server Error");
+    err.status = 500;
+    next(err);
+    return res.status(500).json({ success: false, message: "" + error });
+  }
+})
+
 router.put("/removeWord", auth, async function (req, res, next) {
   try {
     const userId = req.userId;
