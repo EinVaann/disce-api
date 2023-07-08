@@ -46,8 +46,8 @@ router.get("/get", auth, async function (req, res, next) {
   }
 });
 
-router.get("/get-preview", async function(req,res,next){
-  try{
+router.get("/get-preview", async function (req, res, next) {
+  try {
     const cardId = req.query.cardId;
     // get and check
     const flashCard = await FlashCard.findOne({
@@ -63,13 +63,13 @@ router.get("/get-preview", async function(req,res,next){
         flashCard,
       });
     }
-  }catch (error) {
+  } catch (error) {
     const err = new Error("Internal Server Error");
     err.status = 500;
     next(err);
     return res.status(500).json({ success: false, message: "" + error });
   }
-})
+});
 
 router.post("/create", auth, async function (req, res, next) {
   try {
@@ -147,7 +147,7 @@ router.put("/remove-multiple-word", auth, async function (req, res, next) {
         if (wordList.indexOf(wordIds[i]) == -1) {
           continue;
         }
-        wordList.splice(wordList.indexOf(wordIds[i]),1);
+        wordList.splice(wordList.indexOf(wordIds[i]), 1);
       }
       var editedFlashCard = {
         name: checkFlashCard.name,
@@ -185,6 +185,7 @@ router.put("/add-multiple-word", auth, async function (req, res, next) {
       var wordList = await Words.aggregate([
         {
           $project: {
+            _id: 1,
             word: 1,
             pronunciation: 1,
             meaning: 1,
@@ -196,9 +197,15 @@ router.put("/add-multiple-word", auth, async function (req, res, next) {
           },
         },
       ]);
-      var existedWordList = checkFlashCard.wordList;
+      var existedWordList = checkFlashCard.wordList.map((x) => x.toString());
       for (var i = 0; i < wordList.length; i++) {
-        if(!(wordList[i]._id in existedWordList)){
+        var ii = existedWordList.findIndex((e) => {
+          if(e == wordList[i]._id.toString()){
+            return true;
+          }
+          return false;
+        });
+        if(ii==-1){
           existedWordList.push(wordList[i])
         }
       }
@@ -222,30 +229,31 @@ router.put("/add-multiple-word", auth, async function (req, res, next) {
   }
 });
 
-router.post("/make-a-copy",auth,async function(req,res,next){
-  try{
+router.post("/make-a-copy", auth, async function (req, res, next) {
+  try {
     const userId = req.userId;
     const { flashCardId } = req.body;
-    const flashCard = await FlashCard.findOne({_id:flashCardId});
-    if(!flashCard){
-      return res.status(400).json({message: "FlashCard doesn't exist"})
-    }
-    else{
+    const flashCard = await FlashCard.findOne({ _id: flashCardId });
+    if (!flashCard) {
+      return res.status(400).json({ message: "FlashCard doesn't exist" });
+    } else {
       const copyOfFlashCard = new FlashCard({
         userId: userId,
         wordList: flashCard.wordList,
-        name: 'copy of '+flashCard.name
-      })
+        name: "copy of " + flashCard.name,
+      });
       await copyOfFlashCard.save();
-      return res.status(200).json({message: "Copied Flash Card",copyOfFlashCard})
+      return res
+        .status(200)
+        .json({ message: "Copied Flash Card", copyOfFlashCard });
     }
-  }catch (error) {
+  } catch (error) {
     const err = new Error("Internal Server Error");
     err.status = 500;
     next(err);
     return res.status(500).json({ success: false, message: "" + error });
   }
-})
+});
 
 router.put("/removeWord", auth, async function (req, res, next) {
   try {
