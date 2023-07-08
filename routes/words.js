@@ -2,6 +2,7 @@ var express = require("express");
 require("dotenv").config();
 const Word = require("../model/words");
 var router = express.Router();
+const GTTS = require('gtts');
 const { translate } = require("bing-translate-api");
 const thesaurus = require("word-thesaurus");
 
@@ -86,7 +87,7 @@ router.get("/find", async function (req, res, next) {
 });
 
 router.get("/hear", function (req, res) {
-  const gtts = new Gtts(req.query.text, "en");
+  const gtts = new GTTS(req.query.text, "en");
   res.set({ "Content-Type": "audio/mpeg" });
   gtts.stream().pipe(res);
 });
